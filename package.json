@@ -1,0 +1,19 @@
+{
+  "name": "@morphjs/engine",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/przemyslawwalczak/morphjs.git"
+  },
+  "author": "Przemysław Walczak",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/przemyslawwalczak/morphjs/issues"
+  },
+  "homepage": "https://github.com/przemyslawwalczak/morphjs#readme"
+}
