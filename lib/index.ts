@@ -39,8 +39,8 @@ export abstract class Controller
    {
       response.status(200)
       response.type('text/html')
-
-      return await response.renderer.external(name, data)
+      
+      return await response.renderer.render(name, data)
    }
 }
 
@@ -56,6 +56,7 @@ export async function CreateEndpoint(configuration_absolute_file_path: string)
    const endpoint = fastify(config.engine as any)
 
    const view = path.join(process.cwd(), 'view')
+
    const renderer = new Renderer()
 
    await renderer.parse(view)
