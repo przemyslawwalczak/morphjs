@@ -2,6 +2,7 @@
   "name": "@morphjs/engine",
   "version": "0.0.0",
   "description": "",
+  "keywords": [ "morph", "js", "cms" ],
   "main": "lib/index.js",
   "bin": {
     "morph": "./bin/shell.js"

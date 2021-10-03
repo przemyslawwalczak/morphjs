@@ -1,6 +1,6 @@
 import fs from './fs'
 
-interface application_config
+export interface application_config
 {
    app: {
       name: string
@@ -21,6 +21,10 @@ interface application_config
 
    secure?: {
       enabled: boolean
+   }
+
+   renderer: {
+      entry: string
    }
 
    engine: {

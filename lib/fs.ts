@@ -1,3 +1,4 @@
+import * as fs from 'fs'
 import * as promise from 'fs/promises'
 import * as path from 'path'
 import * as yaml from 'js-yaml'
@@ -9,6 +10,8 @@ export interface file_descriptor
    directory: string
    ext: string
    name: string
+
+   swapExtension(ext: string): string
 }
 
 async function exists(path: string)
@@ -44,7 +47,11 @@ async function readdir(directory: string, recursively: boolean = false, result: 
          relative,
          ext: type.ext,
          name: type.name,
-         directory: relative.replace(type.base, '')
+         directory: relative.replace(type.base, ''),
+         swapExtension(ext: string): string
+         {
+            return path.join(root || directory, type.name + ext)
+         }
       }
 
       result.push(descriptor)
@@ -103,9 +110,15 @@ async function readconfig<ReturnType = any>(file: string): Promise<ReturnType>
    }
 }
 
+function readstream(file: string)
+{
+   return fs.createReadStream(file)
+}
+
 export default {
    readdir,
    readfile,
+   readstream,
    readyaml,
    readconfig,
    readjson,

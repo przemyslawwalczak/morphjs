@@ -9,7 +9,7 @@ export type Schema = FastifySchema
 export type RequestMethod = HTTPMethods
 export type Request = FastifyRequest
 export type Response = FastifyReply & {
-   renderer: Renderer
+   render: (name: string, data?: any) => void
 }
 
 /**
@@ -29,19 +29,6 @@ export abstract class Controller
    url: string;
 
    abstract handler(request: Request, response: Response)
-
-   /**
-    * Rendering of html template file handled by internal renderer.
-    * @param template - Template name relative to the path in "view" directory.
-    * @param data  - Data to render the template with.
-    */
-   async render(response: Response, name: string, data: any = {})
-   {
-      response.status(200)
-      response.type('text/html')
-      
-      return await response.renderer.render(name, data)
-   }
 }
 
 /**
@@ -52,21 +39,61 @@ export abstract class Controller
 export async function CreateEndpoint(configuration_absolute_file_path: string)
 {
    const config = await Config.app(configuration_absolute_file_path)
-
    const endpoint = fastify(config.engine as any)
-
    const view = path.join(process.cwd(), 'view')
+   const renderer = new Renderer(config)
 
-   const renderer = new Renderer()
+   await renderer.parse(view, config)
 
-   await renderer.parse(view)
+   async function render(this: Response, name: string, data?: any)
+   {
+      const start = process.hrtime.bigint()
+
+      this.status(200)
+      this.type('text/html')
+
+      const locale = {
+         language: 'pl',
+         region: 'pl',
+         description: 'Test description website'
+      }
+
+      const result = await renderer.render(name, locale, data)
+   
+      console.log(`${this.request.method.toUpperCase()}: ${this.request.url}: Rendered in: ${parseInt((process.hrtime.bigint() - start).toString()) / 1000000} ms`)
+
+      return result
+   }
 
    endpoint.addHook('preHandler', (request, response, callback) => {
       const coerced: Response = response as any
 
-      coerced.renderer = renderer
+      coerced.render = render.bind(response)
 
       callback()
+   })
+
+   // TODO: /public/engine.js optioned if should be exposed in config file; enabled by default.
+   endpoint.route({
+      method: 'GET',
+      url: renderer.engine.public,
+      handler: (request, response) => {
+         const stream = fs.readstream(path.join(__dirname, '../public/engine.js'))
+
+         response.header('content-type', 'application/javascript')
+         response.send(stream)
+      }
+   })
+
+   endpoint.route({
+      method: 'GET',
+      url: '/public/*',
+      handler: (request, response) => {
+         console.log('requesting public:', request.url)
+         response.send({
+            requested: request.url
+         })
+      }
    })
 
    /**
@@ -100,6 +127,8 @@ export async function CreateEndpoint(configuration_absolute_file_path: string)
              * Construction of a controller extending base Controller class.
              */
             const controller: Controller = new (value as any)()
+
+            console.log('registered controller:', controller.url, controller.method)
 
             endpoint.route({
                url: controller.url,
