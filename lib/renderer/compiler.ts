@@ -5,6 +5,9 @@ import * as fs from 'fs'
 class Builder
 {
    script: string[] = []
+   export: string[] = []
+
+   template: Template
 
    push(snippet: string)
    {
@@ -13,7 +16,8 @@ class Builder
 
    html(snippet: string)
    {
-      this.script.push(`html += \`${snippet}\`;`)
+      // TODO: \r\n for debug only
+      this.script.push(`html += \`${snippet}\\r\\n\`;`)
    }
 
    toString()
@@ -24,6 +28,29 @@ class Builder
 
 export class Compiler
 {
+
+   router(build: Builder, container: Container)
+   {
+      build.html(`<div${this.attribute(container.attribute)}>`)
+      
+      for (const children of build.template.body.children)
+      {
+         if (children instanceof Container)
+         {
+            this.container(build, children)
+            continue
+         }
+
+         build.html(this.expression(children))
+      }
+
+      build.html('</div>')
+   }
+
+   link(build: Builder, container: Container)
+   {
+      build.html(`<a href="app:link">app:link</a>`)
+   }
 
    overrideHeadContainers(from: Container, to: Container): Container[]
    {
@@ -65,22 +92,44 @@ export class Compiler
          }
       }
 
-      console.log(result)
-
       return result
    }
 
-   attribute(attribute: Map<string, Expression>, merge?: Map<string, Expression>)
+   translateKey(key: string)
+   {
+      switch (key)
+      {
+         case 'className': return 'class'
+      }
+
+      return null
+   }
+
+   attribute(attribute: Map<string, Expression>, merge?: Map<string, Expression>, override: boolean = true)
    {
       const result = [] as string[]
 
       for (const key of Array.from(attribute.keys()))
       {
          const value = attribute.get(key)
-         result.push(`${key}="${this.expression(value)}"`)
+         const translated = this.translateKey(key)
+
+         if (merge && merge.has(key) && override)
+         {
+            // TODO: If it's a class, merge classes?
+            result.push(`${translated || key}="${this.expression(merge.get(key))}"`)
+            continue
+         }
+
+         result.push(`${translated || key}="${this.expression(value)}"`)
       }
 
-      return result.join(' ')
+      if (result.length)
+      {
+         return ` ${result.join(' ')}`
+      }
+
+      return ''
    }
 
    expression(expression: Expression)
@@ -107,15 +156,47 @@ export class Compiler
       return '${' + variable + '}'
    }
 
+   appContainer(build: Builder, container: Container)
+   {
+      switch (container.name)
+      {
+         case 'router': return this.router(build, container)
+         case 'link': return this.link(build, container)
+      }
+   }
+
    container(build: Builder, container: Container)
    {
+      if (container.namespace === 'app')
+      {
+         return this.appContainer(build, container)
+      }
+
       if (container.children.length === 0)
       {
-         build.html(`<${container.name} ${this.attribute(container.attribute)}/>`)
+         build.html(`<${container.name}${this.attribute(container.attribute)} />`)
          return
       }
 
-      build.html(`<${container.name} ${this.attribute(container.attribute)}>`)
+      if (!container.hasContainer())
+      {
+         let expressions = ''
+
+         for (const children of container.children)
+         {
+            if (children instanceof Container)
+            {
+               continue
+            }
+
+            expressions += this.expression(children)
+         }
+
+         build.html(`<${container.name}${this.attribute(container.attribute)}>${expressions}</${container.name}>`)
+         return
+      }
+
+      build.html(`<${container.name}${this.attribute(container.attribute)}>`)
 
       for (const children of container.children)
       {
@@ -145,7 +226,18 @@ export class Compiler
 
    body(build: Builder, from: Container, to: Container)
    {
-      build.html('<body>')
+      build.html(`<body${this.attribute(from.attribute, to.attribute)}>`)
+      
+      for (const children of from.children)
+      {
+         if (children instanceof Container)
+         {
+            this.container(build, children)
+            continue
+         }
+
+         build.html(this.expression(children))
+      }
 
       build.html('</body>')
    }
@@ -154,7 +246,7 @@ export class Compiler
    {
       const build = new Builder()
 
-      console.log(entry)
+      build.template = template
 
       const context: vm.Context = {
          // TODO: Merge

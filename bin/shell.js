@@ -56,14 +56,14 @@ var command = {
         handle: function (argv) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
-                    (0, index_1.CreateEndpoint)(path.join(process.cwd(), argv.$name))["catch"](function (e) { return console.error('Shell Error:', e); });
+                    index_1.CreateEndpoint(path.join(process.cwd(), argv.$name))["catch"](function (e) { return console.error('Shell Error:', e); });
                     return [2 /*return*/];
                 });
             });
         }
     }
 };
-(0, yargs_1["default"])(process.argv.slice(2))
+yargs_1["default"](process.argv.slice(2))
     .scriptName('morph')
     .command('start <$name>', 'start application', command.start.parse, command.start.handle)
     .command('list', 'list currently running applications', command.start.parse, command.start.handle)

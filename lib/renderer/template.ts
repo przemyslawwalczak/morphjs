@@ -261,6 +261,19 @@ export class Container
       this.children = []
    }
 
+   hasContainer()
+   {
+      for (const children of this.children)
+      {
+         if (children instanceof Container)
+         {
+            return true
+         }
+      }
+
+      return false
+   }
+
    queryContainer(name: string, query?: any): Container
    {
       for (const children of this.children)
@@ -459,7 +472,7 @@ export class Template
       }
    }
 
-   element_body(children: any[], parent?: Container)
+   element_body(target: Container, children: any[], parent?: Container)
    {
       if (!parent || parent.name !== 'html' || this.body)
       {
@@ -467,6 +480,7 @@ export class Template
       }
 
       this.body = new Container('body')
+      this.body.attribute = target.attribute
 
       for (const node of children)
       {
@@ -486,7 +500,7 @@ export class Template
 
    element_link(target: Container, parent?: Container)
    {
-      if (!parent || parent.name !== 'head')
+      if (!parent || (parent.name !== 'head' && target.namespace !== 'app'))
       {
          throw new Error(`Container link can only be nested in head container`)
       }
@@ -517,22 +531,25 @@ export class Template
       {
          case 'html': return this.element_html(children, parent)
          case 'head': return this.element_head(children, parent)
-         case 'body': return this.element_body(children, parent)
+         case 'body': return this.element_body(target, children, parent)
 
          case 'meta': return this.element_meta(target, parent)
          case 'link': return this.element_link(target, parent)
          case 'title': return this.element_title(target, children, parent)
       }
 
-      if (!parent && !this.body)
-      {
-         this.body = target
-      }
-
       for (const node of children)
       {
          this.transverse(node, target)
       }
+      
+      if (!parent && !this.body)
+      {
+         this.body = target
+         return
+      }
+
+      parent.children.push(target)
    }
 
    expression({ expression }: any, parent?: Container)
@@ -578,16 +595,6 @@ export class Template
          throw new Error(`Import declarations are required on top of document`)
       }
       
-      // const module = this.import.create(node.source.value)
-
-      // for (const specifier of node.specifiers)
-      // {
-      //    console.log(specifier)
-      // }
-
-      // // this.importer
-
-      // console.log(node)
    }
 
    export_declaration(node: any, parent?: Container)
@@ -642,7 +649,7 @@ export class Template
       }
 
       // TODO: Select locale context
-      this.context.locale = {}
+      this.context.locale = locale
 
       // TODO: Extend data to context
 

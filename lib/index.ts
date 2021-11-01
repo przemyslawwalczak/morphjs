@@ -123,14 +123,10 @@ export async function CreateEndpoint(configuration_absolute_file_path: string)
       {
          if (Object.getPrototypeOf(value) === Controller)
          {
-            console.log(value)
-            
             /**
              * Construction of a controller extending abstract base Controller class.
              */
             const controller: Controller = new (value as any)()
-
-            console.log(controller)
 
             console.log('registered controller:', controller.url, controller.method)
 
