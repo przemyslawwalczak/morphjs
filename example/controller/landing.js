@@ -1,5 +1,19 @@
-#!/usr/bin/env node
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,38 +51,28 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var yargs_1 = require("yargs");
-var index_1 = require("../lib/index");
-var path = require("path");
-var command = {
-    start: {
-        parse: function (yargs) {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    return [2 /*return*/, yargs.positional('$name', {
-                            type: 'string',
-                            describe: 'app encapsulation file',
-                            "default": 'app.yaml | app.js'
-                        })];
-                });
-            });
-        },
-        handle: function (argv) {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    (0, index_1.CreateEndpoint)(path.join(process.cwd(), argv.$name))["catch"](function (e) { return console.error('Shell Error:', e); });
-                    return [2 /*return*/];
-                });
-            });
-        }
+exports.Landing = void 0;
+var lib_1 = require("../../lib");
+var Landing = /** @class */ (function (_super) {
+    __extends(Landing, _super);
+    function Landing() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.method = ['GET'];
+        _this.url = '/';
+        return _this;
     }
-};
-(0, yargs_1["default"])(process.argv.slice(2))
-    .scriptName('morph')
-    .command('start <$name>', 'start application', command.start.parse, command.start.handle)
-    .command('list', 'list currently running applications', command.start.parse, command.start.handle)
-    .command('stop <$name>', 'stop application', command.start.parse, command.start.handle)
-    .command('restart <$name>', 'restart application', command.start.parse, command.start.handle)
-    .command('remove <$name>', 'remove application from deamon', command.start.parse, command.start.handle)
-    .demandCommand()
-    .argv;
+    Landing.prototype.handler = function (request, response) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, response.render('page/landing', {
+                            array: [1, 2, 3]
+                        })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    return Landing;
+}(lib_1.Controller));
+exports.Landing = Landing;

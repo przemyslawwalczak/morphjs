@@ -1,0 +1,10 @@
+app:
+  name: Test Application
+  description: Test Application description
+
+endpoint:
+  host: 127.0.0.1
+  port: 3002
+
+renderer:
+  entry: blog.jsx

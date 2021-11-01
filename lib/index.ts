@@ -73,7 +73,7 @@ export async function CreateEndpoint(configuration_absolute_file_path: string)
       callback()
    })
 
-   // TODO: /public/engine.js optioned if should be exposed in config file; enabled by default.
+   // TODO: /public/engine.js option should be exposed in config file; enabled by default.
    endpoint.route({
       method: 'GET',
       url: renderer.engine.public,
@@ -123,10 +123,14 @@ export async function CreateEndpoint(configuration_absolute_file_path: string)
       {
          if (Object.getPrototypeOf(value) === Controller)
          {
+            console.log(value)
+            
             /**
-             * Construction of a controller extending base Controller class.
+             * Construction of a controller extending abstract base Controller class.
              */
             const controller: Controller = new (value as any)()
+
+            console.log(controller)
 
             console.log('registered controller:', controller.url, controller.method)
 

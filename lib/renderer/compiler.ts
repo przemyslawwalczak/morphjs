@@ -178,7 +178,7 @@ export class Compiler
       build.push(`let html = '';`)
 
       build.html('<!DOCTYPE html>')
-      build.html('<html lang="en">')
+      build.html('<html lang="${this.locale.language}">')
 
       this.head(build, entry.head, template.head)
       this.body(build, entry.body, template.body)
